@@ -48,3 +48,7 @@ class Piece:
         self.row = row
         self.col = col
         self.calc_pos()
+
+    def __repr__(self):
+        # returns the color of piece
+        return str(self.color)
