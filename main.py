@@ -9,15 +9,27 @@ from algorithm.iddfs import iddfs
 pygame.init()
 pygame.font.init()
 
-
 FPS = 60
-
 WIN = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption('Checkers')
 
+# Color definitions
+BG_COLOR = (240, 248, 255)  # Light Alice Blue
+TITLE_COLOR = (65, 105, 225)  # Royal Blue
+BUTTON_NORMAL = (135, 206, 235)  # Sky Blue
+BUTTON_HOVER = (70, 130, 180)  # Steel Blue
+TEXT_NORMAL = (255, 255, 255)  # White
+TEXT_HOVER = (245, 245, 220)  # Beige
 
+FONT = pygame.font.Font(None, 40)
+HOVER_FONT = pygame.font.Font(None, 44)
 
-FONT = pygame.font.Font(None, 36)
+# Load background image (you'll need to provide your own image file)
+try:
+    BACKGROUND_IMAGE = pygame.image.load("background.jpg")  # Replace with your image path
+    BACKGROUND_IMAGE = pygame.transform.scale(BACKGROUND_IMAGE, (WIDTH, HEIGHT))
+except:
+    BACKGROUND_IMAGE = None  # Fallback to solid color if image fails
 
 def get_row_col_from_mouse(pos):
     x, y = pos
@@ -25,33 +37,86 @@ def get_row_col_from_mouse(pos):
     col = x // SQUARE_SIZE
     return row, col
 
-def draw_menu():
-    """Draws the menu screen for AI selection."""
-    WIN.fill(WHITE)
+def draw_menu(selected_option):
+    """Draws an interactive menu screen for AI selection."""
+    if BACKGROUND_IMAGE:
+        WIN.blit(BACKGROUND_IMAGE, (0, 0))
+    else:
+        WIN.fill(BG_COLOR)
+    
+    # Semi-transparent overlay for better text readability
+    overlay = pygame.Surface((WIDTH, HEIGHT), pygame.SRCALPHA)
+    overlay.fill((50, 50, 50, 100))  # Gray with alpha
+    WIN.blit(overlay, (0, 0))
+    
+    # Menu title
+    title_text = FONT.render("Select an AI Algorithm to play against", True, TITLE_COLOR)
+    title_rect = title_text.get_rect(center=(WIDTH // 2, HEIGHT // 6))
+    WIN.blit(title_text, title_rect)
 
-    title_text = FONT.render("Press 1 , 2 or 3", True, BLACK)
-    minimax_text = FONT.render("1. Minimax", True, BLACK)
-    alpha_beta_text = FONT.render("2. Alpha-Beta Pruning", True, BLACK)
-    iddfs_text = FONT.render("3. Iterative Deepening DFS", True, BLACK)
-
-    WIN.blit(title_text, (WIDTH // 5 , HEIGHT // 10 ))
-    WIN.blit(minimax_text, (WIDTH // 5 , HEIGHT // 10 * 3))
-    WIN.blit(alpha_beta_text, (WIDTH // 5 , HEIGHT // 10 * 4))
-    WIN.blit(iddfs_text, (WIDTH // 5 , HEIGHT // 10 * 5))
-
+    # Button properties
+    button_width = 400
+    button_height = 70
+    button_spacing = 30
+    total_height = (button_height * 3) + (button_spacing * 2)
+    start_y = (HEIGHT - total_height) // 2
+    
+    # Button rectangles and texts
+    options = [
+        ("1. Minimax", minimax),
+        ("2. Alpha-Beta Pruning", alpha_beta_pruning),
+        ("3. Iterative Deepening DFS", iddfs)
+    ]
+    
+    button_rects = []
+    mouse_pos = pygame.mouse.get_pos()
+    
+    for i, (text, _) in enumerate(options):
+        button_x = (WIDTH - button_width) // 2
+        button_y = start_y + (button_height + button_spacing) * i
+        
+        button_rect = pygame.Rect(button_x, button_y, button_width, button_height)
+        button_rects.append(button_rect)
+        
+        is_hovered = button_rect.collidepoint(mouse_pos)
+        
+        # Draw button with shadow effect
+        shadow_rect = pygame.Rect(button_x + 5, button_y + 5, button_width, button_height)
+        pygame.draw.rect(WIN, (100, 100, 100, 50), shadow_rect, border_radius=15)
+        
+        if is_hovered or selected_option == i:
+            pygame.draw.rect(WIN, BUTTON_HOVER, button_rect, border_radius=15)
+            text_surface = HOVER_FONT.render(text, True, TEXT_HOVER)
+        else:
+            pygame.draw.rect(WIN, BUTTON_NORMAL, button_rect, border_radius=15)
+            text_surface = FONT.render(text, True, TEXT_NORMAL)
+            
+        text_rect = text_surface.get_rect(center=button_rect.center)
+        WIN.blit(text_surface, text_rect)
+    
     pygame.display.update()
+    return button_rects
 
 def select_algorithm():
-    """Allows the user to select an AI algorithm before starting the game."""
-    draw_menu()
-    selected_algorithm = None
-
-    while selected_algorithm is None:
+    """Allows the user to select an AI algorithm with an interactive menu."""
+    selected_option = None
+    button_rects = None
+    
+    while selected_option is None:
+        button_rects = draw_menu(selected_option)
+        
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
                 exit()
-
+                
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                mouse_pos = pygame.mouse.get_pos()
+                for i, rect in enumerate(button_rects):
+                    if rect.collidepoint(mouse_pos):
+                        selected_option = i
+                        break
+                        
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_1:
                     return minimax
@@ -59,11 +124,42 @@ def select_algorithm():
                     return alpha_beta_pruning
                 elif event.key == pygame.K_3:
                     return iddfs
-                
-def show_end_message():
-    WIN.fill(WHITE)
-    end_text = FONT.render("Game Ended. Press any key to close.", True, GREEN)
-    WIN.blit(end_text, (WIDTH // 2 - 180, HEIGHT // 2))
+    
+    algorithms = [minimax, alpha_beta_pruning, iddfs]
+    return algorithms[selected_option]
+
+def show_end_message(winner):
+    """Display game over screen with winner information."""
+    if BACKGROUND_IMAGE:
+        WIN.blit(BACKGROUND_IMAGE, (0, 0))
+    else:
+        WIN.fill(BG_COLOR)
+    
+    overlay = pygame.Surface((WIDTH, HEIGHT), pygame.SRCALPHA)
+    overlay.fill((50, 50, 50, 100))
+    WIN.blit(overlay, (0, 0))
+    
+    # Determine winner text
+    if winner == RED:
+        winner_text = "You Won!"
+        color = (255, 69, 0)  # Orange Red for player victory
+    elif winner == WHITE:
+        winner_text = "AI Won!"
+        color = (70, 130, 180)  # Steel Blue for AI victory
+    else:
+        winner_text = "It's a Draw!"
+        color = TITLE_COLOR
+    
+    # Render winner message
+    winner_surface = HOVER_FONT.render(winner_text, True, color)
+    winner_rect = winner_surface.get_rect(center=(WIDTH // 2, HEIGHT // 2 - 50))
+    WIN.blit(winner_surface, winner_rect)
+    
+    # Render instruction text
+    instruction_surface = FONT.render("Press any key to close", True, TEXT_NORMAL)
+    instruction_rect = instruction_surface.get_rect(center=(WIDTH // 2, HEIGHT // 2 + 50))
+    WIN.blit(instruction_surface, instruction_rect)
+    
     pygame.display.update()
 
     waiting = True
@@ -75,7 +171,7 @@ def show_end_message():
                 waiting = False
 
 def main():
-    ai_algorithm = select_algorithm()  # Ask the user for AI choice
+    ai_algorithm = select_algorithm()
     run = True
     clock = pygame.time.Clock()
     game = Game(WIN)
@@ -87,10 +183,10 @@ def main():
             value, new_board = ai_algorithm(game.get_board(), 3, WHITE, game)
             game.ai_move(new_board)
 
-        if game.winner() is not None:
-            print(f"Winner: {game.winner()}")
-            show_end_message()
-            #pygame.time.delay(2000)
+        winner = game.winner()
+        if winner is not None:
+            print(f"Winner: {winner}")
+            show_end_message(winner)
             run = False
 
         for event in pygame.event.get():
