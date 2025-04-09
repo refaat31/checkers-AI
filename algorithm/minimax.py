@@ -1,8 +1,6 @@
 from copy import deepcopy
 import pygame
-
-RED = (255,0,0)
-WHITE = (255,255,255)
+from checkers.constants import RED, WHITE, SQUARE_SIZE, GREEN, WIDTH, HEIGHT  # Import necessary constants
 
 def minimax(position, depth, max_player, game):
     if depth == 0 or position.winner() != None:
@@ -33,33 +31,27 @@ def minimax(position, depth, max_player, game):
                 best_move = move
         return minEval, best_move
 
-def simulate_move(piece,move,board,game,skip):
-    board.move(piece,move[0],move[1])
+def simulate_move(piece, move, board, game, skip):
+    board.move(piece, move[0], move[1])
     if skip:
         board.remove(skip)
     return board
 
-def get_all_moves(board,color,game):
-    moves=[]
+def get_all_moves(board, color, game):
+    moves = []
     for piece in board.get_all_pieces(color):
         valid_moves = board.get_valid_moves(piece)
-        for move,skip in valid_moves.items():
+        for move, skip in valid_moves.items():
             draw_moves(game)
             temp_board = deepcopy(board)
-            temp_piece=temp_board.get_piece(piece.row,piece.col)
-            new_board= simulate_move(temp_piece,move,temp_board,game,skip)
+            temp_piece = temp_board.get_piece(piece.row, piece.col)
+            new_board = simulate_move(temp_piece, move, temp_board, game, skip)
             moves.append(new_board)
     return moves
 
-# def draw_moves(game, board):
-#     #board.draw(game.win)
-#     pygame.draw.circle(game.win, (0,255,0), (280, 280), 50, 5)
-#     pygame.display.update()
-#     #pygame.time.delay(100)
-
 def draw_moves(game):
-    font = pygame.font.Font(None, 36)  # Create a font object (None for default font, 36 is the size)
-    text = font.render("Thinking", True, (0, 255, 0))  # Render the text with an antialiasing flag and a color
-    text_rect = text.get_rect(center=(280, 280))  # Center the text at (280, 280)
-    game.win.blit(text, text_rect)  # Draw the text on the screen
-    pygame.display.update()  # Update the display
+    font = pygame.font.Font(None, SQUARE_SIZE // 2)  # Scale font size with SQUARE_SIZE (e.g., 50 for 100)
+    text = font.render("Thinking", True, GREEN)  # Use GREEN from constants
+    text_rect = text.get_rect(center=(WIDTH // 2, HEIGHT // 2))  # Center at (400, 400) for 800x800
+    game.win.blit(text, text_rect)
+    pygame.display.update()

@@ -15,7 +15,7 @@ pygame.display.set_caption('Checkers')
 
 # Color definitions
 BG_COLOR = (240, 248, 255)  # Light Alice Blue
-TITLE_COLOR = (65, 105, 225)  # Royal Blue
+TITLE_COLOR = (255, 255, 255)  # Royal Blue
 BUTTON_NORMAL = (135, 206, 235)  # Sky Blue
 BUTTON_HOVER = (70, 130, 180)  # Steel Blue
 TEXT_NORMAL = (255, 255, 255)  # White
@@ -24,9 +24,9 @@ TEXT_HOVER = (245, 245, 220)  # Beige
 FONT = pygame.font.Font(None, 40)
 HOVER_FONT = pygame.font.Font(None, 44)
 
-# Load background image (you'll need to provide your own image file)
+
 try:
-    BACKGROUND_IMAGE = pygame.image.load("background.jpg")  # Replace with your image path
+    BACKGROUND_IMAGE = pygame.image.load("background.jpg")
     BACKGROUND_IMAGE = pygame.transform.scale(BACKGROUND_IMAGE, (WIDTH, HEIGHT))
 except:
     BACKGROUND_IMAGE = None  # Fallback to solid color if image fails
@@ -50,9 +50,14 @@ def draw_menu(selected_option):
     WIN.blit(overlay, (0, 0))
     
     # Menu title
-    title_text = FONT.render("Select an AI Algorithm to play against", True, TITLE_COLOR)
+    title_text = FONT.render("Checkers Game", True, TITLE_COLOR)
     title_rect = title_text.get_rect(center=(WIDTH // 2, HEIGHT // 6))
     WIN.blit(title_text, title_rect)
+
+    # Subtitle
+    subtitle_text = FONT.render("Select an Algorithm", True, TITLE_COLOR)
+    subtitle_rect = subtitle_text.get_rect(center=(WIDTH // 2, HEIGHT // 4))
+    WIN.blit(subtitle_text, subtitle_rect)
 
     # Button properties
     button_width = 400
@@ -119,11 +124,11 @@ def select_algorithm():
                         
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_1:
-                    return minimax
+                    selected_option = 0
                 elif event.key == pygame.K_2:
-                    return alpha_beta_pruning
+                    selected_option = 1
                 elif event.key == pygame.K_3:
-                    return iddfs
+                    selected_option = 2
     
     algorithms = [minimax, alpha_beta_pruning, iddfs]
     return algorithms[selected_option]
@@ -139,7 +144,6 @@ def show_end_message(winner):
     overlay.fill((50, 50, 50, 100))
     WIN.blit(overlay, (0, 0))
     
-    # Determine winner text
     if winner == RED:
         winner_text = "You Won!"
         color = (255, 69, 0)  # Orange Red for player victory
@@ -150,12 +154,10 @@ def show_end_message(winner):
         winner_text = "It's a Draw!"
         color = TITLE_COLOR
     
-    # Render winner message
     winner_surface = HOVER_FONT.render(winner_text, True, color)
     winner_rect = winner_surface.get_rect(center=(WIDTH // 2, HEIGHT // 2 - 50))
     WIN.blit(winner_surface, winner_rect)
     
-    # Render instruction text
     instruction_surface = FONT.render("Press any key to close", True, TEXT_NORMAL)
     instruction_rect = instruction_surface.get_rect(center=(WIDTH // 2, HEIGHT // 2 + 50))
     WIN.blit(instruction_surface, instruction_rect)
@@ -181,11 +183,13 @@ def main():
 
         if game.turn == WHITE:
             value, new_board = ai_algorithm(game.get_board(), 3, WHITE, game)
-            game.ai_move(new_board)
+            if new_board:
+                game.ai_move(new_board)
 
         winner = game.winner()
         if winner is not None:
             print(f"Winner: {winner}")
+            game.update()  # Ensure final state is shown
             show_end_message(winner)
             run = False
 

@@ -1,8 +1,6 @@
 from copy import deepcopy
 import pygame
-
-RED = (255, 0, 0)
-WHITE = (255, 255, 255)
+from checkers.constants import RED, WHITE, SQUARE_SIZE, GREEN, WIDTH, HEIGHT  # Import necessary constants
 
 def iddfs(position, max_depth, max_player, game):
     best_move = None
@@ -67,5 +65,8 @@ def get_all_moves(board, color, game):
     return moves
 
 def draw_moves(game, board):
-    pygame.draw.circle(game.win, (0, 255, 0), (280, 280), 50, 5)
+    font = pygame.font.Font(None, SQUARE_SIZE // 2)
+    text = font.render("Thinking", True, GREEN)
+    text_rect = text.get_rect(center=(WIDTH // 2, HEIGHT // 2))
+    game.win.blit(text, text_rect)
     pygame.display.update()
