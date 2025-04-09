@@ -1,21 +1,26 @@
 from copy import deepcopy
 import pygame
-from checkers.constants import RED, WHITE, SQUARE_SIZE, GREEN, WIDTH, HEIGHT  # Import necessary constants
+
+RED = (255, 0, 0)
+WHITE = (255, 255, 255)
 
 def iddfs(position, max_depth, max_player, game):
+    best_eval = float('-inf') if max_player else float('inf')
     best_move = None
-    best_value = float('-inf') if max_player else float('inf')  # Track best evaluation
-
-    for depth in range(1, max_depth + 1):  # Iteratively increase depth
-        eval, move = depth_limited_search(position, depth, max_player, game)
-        if move:  # If a move is found
-            best_value = eval  # Update best evaluation
-            best_move = move   # Update best move found so far
-
-    if best_move is None:  # No moves found at any depth
-        return position.evaluate(), position  # Return current evaluation and position
+ 
+    for depth in range(1, max_depth + 1): # Iteratively increase depth
+        eval_value, move = depth_limited_search(position, depth, max_player, game)
+        if max_player and eval_value > best_eval:
+            best_eval = eval_value
+            best_move = move
+        elif not max_player and eval_value < best_eval:
+            best_eval = eval_value # Update best move found so far    
+            best_move = move # Return the best move found in the deepest search
     
-    return best_value, best_move  # Return tuple of best evaluation and move
+    if best_move is None:
+        return position.evaluate(), position
+        
+    return best_eval, best_move
 
 def depth_limited_search(position, depth, max_player, game):
     if depth == 0 or position.winner() is not None:
@@ -24,26 +29,28 @@ def depth_limited_search(position, depth, max_player, game):
     if max_player:
         maxEval = float('-inf')
         best_move = None
-        moves = get_all_moves(position, WHITE, game)
-        if not moves:  # No moves available
-            return position.evaluate(), position
-        for move in moves:
+        for move in get_all_moves(position, WHITE, game):
             evaluation, _ = depth_limited_search(move, depth - 1, False, game)
             if evaluation > maxEval:
                 maxEval = evaluation
                 best_move = move
+        
+        if best_move is None:
+            return position.evaluate(), position
+            
         return maxEval, best_move
     else:
         minEval = float('inf')
         best_move = None
-        moves = get_all_moves(position, RED, game)
-        if not moves:  # No moves available
-            return position.evaluate(), position
-        for move in moves:
+        for move in get_all_moves(position, RED, game):
             evaluation, _ = depth_limited_search(move, depth - 1, True, game)
             if evaluation < minEval:
                 minEval = evaluation
                 best_move = move
+                
+        if best_move is None:
+            return position.evaluate(), position
+            
         return minEval, best_move
 
 def simulate_move(piece, move, board, game, skip):
@@ -65,8 +72,6 @@ def get_all_moves(board, color, game):
     return moves
 
 def draw_moves(game, board):
-    font = pygame.font.Font(None, SQUARE_SIZE // 2)
-    text = font.render("Thinking", True, GREEN)
-    text_rect = text.get_rect(center=(WIDTH // 2, HEIGHT // 2))
-    game.win.blit(text, text_rect)
-    pygame.display.update()
+    if game:
+        pygame.draw.circle(game.win, (0, 255, 0), (280, 280), 50, 5)
+        pygame.display.update()
