@@ -138,7 +138,7 @@ def draw_menu(selected_option=None):
     
     # Add recommendation text at the bottom
     rec_text = FONT.render(f"Recommended Level: {recommended}", True, TITLE_COLOR)
-    rec_rect = rec_text.get_rect(center=(WIDTH // 2, HEIGHT -500))
+    rec_rect = rec_text.get_rect(center=(WIDTH // 2, HEIGHT -630))
     WIN.blit(rec_text, rec_rect)
     
     pygame.display.update()
