@@ -102,13 +102,12 @@ def draw_menu(selected_option=None):
     # Button options
     options = [
         ("1. Iterative Deepening DFS (Professional)", iddfs),
-        ("2. MonteCarlo (Challenging PLACEHOLDER)", None),
+        ("2. MonteCarlo (Challenging PLACEHOLDER)", None), #place holder
         ("3. Alpha-Beta Pruning (Hard)", alpha_beta_pruning),
         ("4. Minimax (Medium)", minimax),
-        ("5. ExpectiMax (Easy PLACEHOLDER)", None),
-        ("6. Negamax (Beginner PLACEHOLDER)", None),
-        ("7. View Statistics", None),
-        ("R. Reset Statistics", None)
+        ("5. ExpectiMax (Easy PLACEHOLDER)", None), #place Holder
+        ("6. Negamax (Beginner PLACEHOLDER)", None),#place holder
+        ("7. View Statistics", None)
     ]
     
     button_rects = []
