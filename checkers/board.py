@@ -13,7 +13,7 @@ class Board:
         # Create Board
         self.create_board()
 
-    #Function to draw red and black patterns on a checker board
+    # Function to draw red and black patterns on a checker board
     def draw_squares(self, win):
         # Fill window with black color
         win.fill(BLACK)
@@ -27,13 +27,58 @@ class Board:
                 pygame.draw.rect(win, RED, (row*SQUARE_SIZE, col *SQUARE_SIZE, SQUARE_SIZE, SQUARE_SIZE))
 
     def evaluate(self):
-        return self.white_left-self.red_left + (self.white_kings-self.red_kings)*0.5
+        """
+        Evaluate the board state for search algorithms (Minimax, Alpha-Beta, IDDFS).
+        Positive score favors White, negative favors Red.
+        """
+        score = 0
+        
+        # Check for a winner (terminal state)
+        winner = self.winner()
+        if winner == WHITE:
+            return 10000  # Large value for a win
+        elif winner == RED:
+            return -10000  # Large value for a loss
+        
+        # Piece count: regular pieces worth 1, kings worth 3
+        white_pieces = self.get_all_pieces(WHITE)
+        red_pieces = self.get_all_pieces(RED)
+        score += self.white_left - self.red_left  # Basic piece advantage
+        score += 2 * (self.white_kings - self.red_kings)  # Kings are worth more
+        
+        # Board control: favor pieces closer to the opponent's side
+        white_position_score = sum(7 - p.row for p in white_pieces if not p.king)  # White moves up (row decreases)
+        red_position_score = sum(p.row for p in red_pieces if not p.king)  # Red moves down (row increases)
+        score += (white_position_score - red_position_score) * 0.1  # Small weight to avoid overemphasis
+        
+        # Safety: penalize pieces that can be captured
+        white_vulnerable = sum(1 for p in white_pieces if self.is_vulnerable(p, WHITE))
+        red_vulnerable = sum(1 for p in red_pieces if self.is_vulnerable(p, RED))
+        score += (red_vulnerable - white_vulnerable) * 0.5  # Moderate penalty for vulnerability
+        
+        return score
 
-    def get_all_pieces(self,color):
-        pieces=[]
+    def is_vulnerable(self, piece, color):
+        """
+        Check if a piece is at risk of being captured by nearby opponent pieces.
+        """
+        opponent_color = RED if color == WHITE else WHITE
+        opponent_pieces = self.get_all_pieces(opponent_color)
+        
+        # Only check pieces within 2 rows/cols (max jump distance in checkers)
+        for opp in opponent_pieces:
+            if abs(opp.row - piece.row) <= 2 and abs(opp.col - piece.col) <= 2:
+                opp_moves = self.get_valid_moves(opp)
+                for move, skip in opp_moves.items():
+                    if skip and piece in skip:  # If this piece can be jumped
+                        return True
+        return False
+
+    def get_all_pieces(self, color):
+        pieces = []
         for row in self.board:
             for piece in row:
-                if piece !=0 and piece.color == color:
+                if piece != 0 and piece.color == color:
                     pieces.append(piece)
         return pieces
 
@@ -55,10 +100,10 @@ class Board:
         for row in range(ROWS):
             # Creating an 2D array for the board
             self.board.append([])
-            # inser pieces in each row
+            # insert pieces in each row
             for col in range(COLS):
-                #Insert in alternating order
-                if col % 2 == ((row +  1) % 2):
+                # Insert in alternating order
+                if col % 2 == ((row + 1) % 2):
                     if row < 3:
                         # White pieces will be inserted in row 0,1 and 2
                         self.board[row].append(Piece(row, col, WHITE))
@@ -66,10 +111,10 @@ class Board:
                         # Red pieces will be inserted in row 5,6,7
                         self.board[row].append(Piece(row, col, RED))
                     else:
-                        # Rest of the empty squares wil be filled with 0
+                        # Rest of the empty squares will be filled with 0
                         self.board[row].append(0)
                 else:
-                    # Rest of the empty squares wil be filled with 0
+                    # Rest of the empty squares will be filled with 0
                     self.board[row].append(0)
         
     # Method for rendering the board and pieces on the window.
@@ -77,10 +122,10 @@ class Board:
         # Call the draw_squares() method to draw the squares on the window
         # This colors the squares to create the RED-BLACK pattern.
         self.draw_squares(win)
-        # Loop for rendring all the pieces on the squares
+        # Loop for rendering all the pieces on the squares
         for row in range(ROWS):
             for col in range(COLS):
-                # Get the piece information located at each sqaure
+                # Get the piece information located at each square
                 # piece = RED or BLACK or 0 ; three options
                 piece = self.board[row][col]
                 # Check if the piece 0 or the square is blank
@@ -99,16 +144,24 @@ class Board:
                     self.white_left -= 1
     
     def winner(self):
-        # If there is no Red piece left, White wins
         if self.red_left <= 0:
             return WHITE
-        # If there is no white piece left, Red wins
         elif self.white_left <= 0:
             return RED
-            
-        #else return no winner
-        return None 
-
+    
+    # Check if Red has no moves
+        red_pieces = self.get_all_pieces(RED)
+        red_has_moves = any(self.get_valid_moves(piece) for piece in red_pieces)
+        if not red_has_moves and red_pieces:  # Red has pieces but no moves
+            return WHITE
+    
+    # Check if White has no moves
+        white_pieces = self.get_all_pieces(WHITE)
+        white_has_moves = any(self.get_valid_moves(piece) for piece in white_pieces)
+        if not white_has_moves and white_pieces:  # White has pieces but no moves
+            return RED
+    
+        return None
 
     # Method to get the dictionary of valid moves
     def get_valid_moves(self, piece):
@@ -165,8 +218,8 @@ class Board:
                     else:
                         row = min(r+3, ROWS)
                     # Recursively traverse left and right diagonals to find further valid moves
-                    moves.update(self._traverse_left(r+step, row, step, color, left-1,skipped=last))
-                    moves.update(self._traverse_right(r+step, row, step, color, left+1,skipped=last))
+                    moves.update(self._traverse_left(r+step, row, step, color, left-1, skipped=last))
+                    moves.update(self._traverse_right(r+step, row, step, color, left+1, skipped=last))
                 break
             # If the current piece is the same color, stop traversal
             elif current.color == color:
@@ -185,7 +238,6 @@ class Board:
         # Initialize an empty list to keep track of pieces to be skipped
         last = []
         for r in range(start, stop, step):
-            
             if right >= COLS:
                 break
             
@@ -194,7 +246,7 @@ class Board:
                 if skipped and not last:
                     break
                 elif skipped:
-                    moves[(r,right)] = last + skipped
+                    moves[(r, right)] = last + skipped
                 else:
                     moves[(r, right)] = last
                 
@@ -203,8 +255,8 @@ class Board:
                         row = max(r-3, 0)
                     else:
                         row = min(r+3, ROWS)
-                    moves.update(self._traverse_left(r+step, row, step, color, right-1,skipped=last))
-                    moves.update(self._traverse_right(r+step, row, step, color, right+1,skipped=last))
+                    moves.update(self._traverse_left(r+step, row, step, color, right-1, skipped=last))
+                    moves.update(self._traverse_right(r+step, row, step, color, right+1, skipped=last))
                 break
             elif current.color == color:
                 break
@@ -213,8 +265,7 @@ class Board:
 
             right += 1
         
-        return moves
-    
+        return moves     
     def get_all_valid_moves(self, turn):
         moves = {}
         for piece in self.get_all_pieces(turn):
