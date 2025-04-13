@@ -77,3 +77,5 @@ class Game:
         self.board=board
         self.change_turn()
         return 1
+    
+

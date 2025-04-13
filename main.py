@@ -4,6 +4,7 @@ from checkers.game import Game
 from algorithm.alpha_beta_pruning import alpha_beta_pruning
 from algorithm.minimax import minimax
 from algorithm.iddfs import iddfs
+from algorithm.mcts import mcts_move
 
 # Initialize Pygame
 pygame.init()
@@ -29,15 +30,17 @@ def draw_menu():
     """Draws the menu screen for AI selection."""
     WIN.fill(WHITE)
 
-    title_text = FONT.render("Press 1 , 2 or 3", True, BLACK)
+    title_text = FONT.render("Select an algorithm (e.g. 1 for Minimax)", True, BLACK)
     minimax_text = FONT.render("1. Minimax", True, BLACK)
     alpha_beta_text = FONT.render("2. Alpha-Beta Pruning", True, BLACK)
     iddfs_text = FONT.render("3. Iterative Deepening DFS", True, BLACK)
+    mcts_text = FONT.render("4. MCTS", True, BLACK)
 
     WIN.blit(title_text, (WIDTH // 5 , HEIGHT // 10 ))
     WIN.blit(minimax_text, (WIDTH // 5 , HEIGHT // 10 * 3))
     WIN.blit(alpha_beta_text, (WIDTH // 5 , HEIGHT // 10 * 4))
     WIN.blit(iddfs_text, (WIDTH // 5 , HEIGHT // 10 * 5))
+    WIN.blit(mcts_text, (WIDTH // 5 , HEIGHT // 10 * 6))
 
     pygame.display.update()
 
@@ -59,6 +62,8 @@ def select_algorithm():
                     return alpha_beta_pruning
                 elif event.key == pygame.K_3:
                     return iddfs
+                elif event.key == pygame.K_4:
+                    return mcts_move
                 
 def show_end_message():
     WIN.fill(WHITE)
@@ -84,8 +89,16 @@ def main():
         clock.tick(FPS)
 
         if game.turn == WHITE:
-            value, new_board = ai_algorithm(game.get_board(), 3, WHITE, game)
-            game.ai_move(new_board)
+            if ai_algorithm == mcts_move:  # Special case for MCTS
+                print(game.get_board())
+                move = ai_algorithm(game.get_board(), WHITE)
+                piece, destination = move
+                game.select(piece.row, piece.col)
+                row, col = destination
+                game._move(row, col)
+            else:
+                value, new_board = ai_algorithm(game.get_board(), 3, WHITE, game)
+                game.ai_move(new_board)
 
         if game.winner() is not None:
             print(f"Winner: {game.winner()}")
