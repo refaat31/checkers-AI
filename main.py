@@ -275,8 +275,8 @@ def select_algorithm():
                     show_stats_screen()
                 elif event.key == pygame.K_r:
                     reset_stats()
-
-    algorithms = [iddfs, alpha_beta_pruning, alpha_beta_pruning, minimax, iddfs, iddfs]
+    print(f"selected : {selected_option}")
+    algorithms = [iddfs, mcts_move, alpha_beta_pruning, minimax, iddfs, iddfs]
     return algorithms[selected_option], selected_option + 1  # Return algorithm and level
 
 def show_end_message(winner, level):
@@ -347,12 +347,14 @@ def main():
 
         if game.turn == WHITE:
             if ai_algorithm == mcts_move:  # Special case for MCTS
+                print(2)
                 print(game.get_board())
                 move = ai_algorithm(game.get_board(), WHITE)
-                piece, destination = move
-                game.select(piece.row, piece.col)
-                row, col = destination
-                game._move(row, col)
+                if move:
+                    piece, destination = move
+                    game.select(piece.row, piece.col)
+                    row, col = destination
+                    game._move(row, col)
             else:
                 value, new_board = ai_algorithm(game.get_board(), 3, WHITE, game)
                 game.ai_move(new_board)

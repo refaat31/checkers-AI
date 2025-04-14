@@ -1,0 +1,43 @@
+{
+    "player_name": "Player",
+    "total_games": 1,
+    "levels": {
+        "1": {
+            "name": "Iterative Deepening DFS (Professional)",
+            "wins": 0,
+            "losses": 0,
+            "last_played": null
+        },
+        "2": {
+            "name": "MonteCarlo (Challenging)",
+            "wins": 1,
+            "losses": 0,
+            "last_played": "2025-04-13 13:26:54"
+        },
+        "3": {
+            "name": "Alpha-Beta Pruning (Hard)",
+            "wins": 0,
+            "losses": 0,
+            "last_played": null
+        },
+        "4": {
+            "name": "Minimax (Medium)",
+            "wins": 0,
+            "losses": 0,
+            "last_played": null
+        },
+        "5": {
+            "name": "ExpectiMax (Easy)",
+            "wins": 0,
+            "losses": 0,
+            "last_played": null
+        },
+        "6": {
+            "name": "Negamax (Beginner)",
+            "wins": 0,
+            "losses": 0,
+            "last_played": null
+        }
+    },
+    "recommended_level": "4"
+}

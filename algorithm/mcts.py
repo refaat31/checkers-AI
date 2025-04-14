@@ -48,7 +48,7 @@ class MCTSNode:
     def is_terminal_node(self):
         return self.board.winner() is not None
 
-    def simulate(self, max_depth=100):
+    def simulate(self, max_depth=1000):
         sim_board = deepcopy(self.board)
         turn = self.turn
         depth = 0
