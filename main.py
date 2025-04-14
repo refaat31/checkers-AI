@@ -4,6 +4,7 @@ from checkers.constants import WIDTH, HEIGHT, SQUARE_SIZE, RED, WHITE, BLACK, GR
 from checkers.game import Game
 from algorithm.alpha_beta_pruning import alpha_beta_pruning
 from algorithm.minimax import minimax
+from algorithm.expectimax import expectimax
 from algorithm.iddfs import iddfs
 from algorithm.negamax import negamax
 from player_stats import PlayerStats
@@ -106,7 +107,7 @@ def draw_menu(selected_option=None):
         ("2. MonteCarlo (Challenging PLACEHOLDER)", None),
         ("3. Alpha-Beta Pruning (Hard)", alpha_beta_pruning),
         ("4. Minimax (Medium)", minimax),
-        ("5. ExpectiMax (Easy PLACEHOLDER)", None),
+        ("5. ExpectiMax (Easy)", expectimax),
         ("6. Negamax (Beginner)", negamax),
         ("7. View Statistics", None)
     ]
@@ -275,7 +276,7 @@ def select_algorithm():
                 elif event.key == pygame.K_r:
                     reset_stats()
 
-    algorithms = [iddfs, None, alpha_beta_pruning, minimax, None, negamax]
+    algorithms = [iddfs, None, alpha_beta_pruning, minimax, expectimax, negamax]
     return algorithms[selected_option], selected_option + 1  # Return algorithm and level
 
 def show_end_message(winner, level):
