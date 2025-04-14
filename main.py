@@ -104,7 +104,7 @@ def draw_menu(selected_option=None):
     # Button options
     options = [
         ("1. Iterative Deepening DFS (Professional)", iddfs),
-        ("2. MonteCarlo (Challenging PLACEHOLDER)", None),
+        ("2. MonteCarlo (Challenging PLACEHOLDER)", mcts_move),
         ("3. Alpha-Beta Pruning (Hard)", alpha_beta_pruning),
         ("4. Minimax (Medium)", minimax),
         ("5. ExpectiMax (Easy PLACEHOLDER)", None),
@@ -347,8 +347,6 @@ def main():
 
         if game.turn == WHITE:
             if ai_algorithm == mcts_move:  # Special case for MCTS
-                print(2)
-                print(game.get_board())
                 move = ai_algorithm(game.get_board(), WHITE)
                 if move:
                     piece, destination = move
