@@ -35,8 +35,8 @@
         "6": {
             "name": "Negamax (Beginner)",
             "wins": 0,
-            "losses": 0,
-            "last_played": null
+            "losses": 1,
+            "last_played": "2025-04-13 22:12:44"
         }
     },
     "recommended_level": "4"
