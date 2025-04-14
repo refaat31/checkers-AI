@@ -5,6 +5,7 @@ from checkers.game import Game
 from algorithm.alpha_beta_pruning import alpha_beta_pruning
 from algorithm.minimax import minimax
 from algorithm.iddfs import iddfs
+from algorithm.negamax import negamax
 from player_stats import PlayerStats
 
 # Initialize Pygame
@@ -102,11 +103,11 @@ def draw_menu(selected_option=None):
     # Button options
     options = [
         ("1. Iterative Deepening DFS (Professional)", iddfs),
-        ("2. MonteCarlo (Challenging PLACEHOLDER)", None), #place holder
+        ("2. MonteCarlo (Challenging PLACEHOLDER)", None),
         ("3. Alpha-Beta Pruning (Hard)", alpha_beta_pruning),
         ("4. Minimax (Medium)", minimax),
-        ("5. ExpectiMax (Easy PLACEHOLDER)", None), #place Holder
-        ("6. Negamax (Beginner PLACEHOLDER)", None),#place holder
+        ("5. ExpectiMax (Easy PLACEHOLDER)", None),
+        ("6. Negamax (Beginner)", negamax),
         ("7. View Statistics", None)
     ]
     
@@ -138,11 +139,11 @@ def draw_menu(selected_option=None):
     
     # Add recommendation text at the bottom
     rec_text = FONT.render(f"Recommended Level: {recommended}", True, TITLE_COLOR)
-    rec_rect = rec_text.get_rect(center=(WIDTH // 2, HEIGHT -630))
+    rec_rect = rec_text.get_rect(center=(WIDTH // 2, HEIGHT - 630))
     WIN.blit(rec_text, rec_rect)
     
     pygame.display.update()
-    return button_rects
+    return button_rects, options  # Return options along with button_rects
 
 def show_stats_screen():
     """Display statistics screen with enhanced visuals"""
@@ -236,7 +237,7 @@ def select_algorithm():
     button_rects = None
     
     while selected_option is None:
-        button_rects = draw_menu(selected_option)
+        button_rects, options = draw_menu(selected_option)  # Get options from draw_menu
         
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -250,8 +251,7 @@ def select_algorithm():
                         if i == 6:  # Stats button
                             show_stats_screen()
                             break
-                        elif i == 7:  # Reset stats button
-                            reset_stats()
+                        elif options[i][1] is None:  # Skip placeholders
                             break
                         else:
                             selected_option = i
@@ -275,7 +275,7 @@ def select_algorithm():
                 elif event.key == pygame.K_r:
                     reset_stats()
 
-    algorithms = [iddfs, alpha_beta_pruning, alpha_beta_pruning, minimax, iddfs, iddfs]
+    algorithms = [iddfs, None, alpha_beta_pruning, minimax, None, negamax]
     return algorithms[selected_option], selected_option + 1  # Return algorithm and level
 
 def show_end_message(winner, level):
