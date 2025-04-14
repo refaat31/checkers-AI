@@ -265,4 +265,12 @@ class Board:
 
             right += 1
         
-        return moves 
+        return moves     
+    def get_all_valid_moves(self, turn):
+        moves = {}
+        for piece in self.get_all_pieces(turn):
+            piece_moves = self.get_valid_moves(piece)
+            if piece_moves:
+                moves[piece] = piece_moves
+        
+        return moves

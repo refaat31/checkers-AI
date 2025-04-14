@@ -7,6 +7,7 @@ from algorithm.minimax import minimax
 from algorithm.expectimax import expectimax
 from algorithm.iddfs import iddfs
 from algorithm.negamax import negamax
+from algorithm.mcts import mcts_move
 from player_stats import PlayerStats
 
 # Initialize Pygame
@@ -104,7 +105,7 @@ def draw_menu(selected_option=None):
     # Button options
     options = [
         ("1. Iterative Deepening DFS (Professional)", iddfs),
-        ("2. MonteCarlo (Challenging PLACEHOLDER)", None),
+        ("2. MonteCarlo (Challenging PLACEHOLDER)", mcts_move),
         ("3. Alpha-Beta Pruning (Hard)", alpha_beta_pruning),
         ("4. Minimax (Medium)", minimax),
         ("5. ExpectiMax (Easy)", expectimax),
@@ -276,7 +277,7 @@ def select_algorithm():
                 elif event.key == pygame.K_r:
                     reset_stats()
 
-    algorithms = [iddfs, None, alpha_beta_pruning, minimax, expectimax, negamax]
+    algorithms = [iddfs, mcts_move, alpha_beta_pruning, minimax, expectimax, negamax]
     return algorithms[selected_option], selected_option + 1  # Return algorithm and level
 
 def show_end_message(winner, level):
@@ -346,8 +347,16 @@ def main():
         clock.tick(FPS)
 
         if game.turn == WHITE:
-            value, new_board = ai_algorithm(game.get_board(), 3, WHITE, game)
-            game.ai_move(new_board)
+            if ai_algorithm == mcts_move:  # Special case for MCTS
+                move = ai_algorithm(game.get_board(), WHITE)
+                if move:
+                    piece, destination = move
+                    game.select(piece.row, piece.col)
+                    row, col = destination
+                    game._move(row, col)
+            else:
+                value, new_board = ai_algorithm(game.get_board(), 3, WHITE, game)
+                game.ai_move(new_board)
 
         if game.winner() is not None:
             print(f"Winner: {game.winner()}")
