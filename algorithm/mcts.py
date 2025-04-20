@@ -59,9 +59,76 @@ class MCTSNode:
                 print(f"[Simulate] No moves available for {'WHITE' if turn == WHITE else 'RED'} at depth {depth}")
                 break
 
-            piece = random.choice(list(all_moves.keys()))
-            move = random.choice(list(all_moves[piece].keys()))
+            # piece = random.choice(list(all_moves.keys()))
+            # move = random.choice(list(all_moves[piece].keys()))
 
+            # Get all available pieces and their possible moves
+            pieces = list(all_moves.keys())
+            
+            # Step 1: Prioritize captures if available
+            capture_pieces = []
+            for piece in pieces:
+                for move in all_moves[piece]:
+                    dest_row, dest_col = move
+                    # Check if this is a capture move (jumps more than one square)
+                    if abs(piece.row - dest_row) > 1:
+                        capture_pieces.append((piece, move))
+            
+            # Step 2: Prioritize king promotions if available and no captures
+            promotion_pieces = []
+            if not capture_pieces:
+                for piece in pieces:
+                    if not piece.king:  # Only consider non-king pieces
+                        for move in all_moves[piece]:
+                            dest_row, dest_col = move
+                            # Check if this move would result in a king promotion
+                            if (turn == WHITE and dest_row == 0) or (turn == RED and dest_row == 7):
+                                promotion_pieces.append((piece, move))
+            
+            # Step 3: Make a weighted random choice based on our priorities
+            if capture_pieces:
+                # Always choose a capture when available
+                piece, move = random.choice(capture_pieces)
+            elif promotion_pieces:
+                # Choose a king promotion when available and no captures
+                piece, move = random.choice(promotion_pieces)
+            else:
+                # No captures or promotions, use a simple heuristic
+                weighted_moves = []
+                for piece in pieces:
+                    for move in all_moves[piece]:
+                        dest_row, dest_col = move
+                        weight = 1.0  # Base weight
+                        
+                        # Kings are valuable - prefer keeping them safe in center
+                        if piece.king:
+                            # Center positions get higher weights
+                            center_weight = 4 - abs(3.5 - dest_col) - abs(3.5 - dest_row)
+                            weight *= (1.0 + 0.2 * center_weight)
+                        else:
+                            # Non-kings: prefer advancing toward opponent's side
+                            if turn == WHITE:
+                                # WHITE pieces want to advance toward row 0
+                                progress = piece.row - dest_row
+                            else:
+                                # RED pieces want to advance toward row 7
+                                progress = dest_row - piece.row
+                            
+                            # Give more weight to forward moves
+                            weight *= (1.0 + 0.3 * progress)
+                        
+                        weighted_moves.append((piece, move, weight))
+                
+                # Choose move based on weights
+                total_weight = sum(w for _, _, w in weighted_moves)
+                r = random.uniform(0, total_weight)
+                cumulative_weight = 0
+                for piece, move, weight in weighted_moves:
+                    cumulative_weight += weight
+                    if cumulative_weight >= r:
+                        break
+
+            # Execute the selected move
             row, col = piece.row, piece.col
             dest_row, dest_col = move
 
@@ -81,7 +148,7 @@ class MCTSNode:
         if self.parent:
             self.parent.backpropagate(result)
 
-def mcts_move(board, turn, iterations=200):
+def mcts_move(board, turn, iterations=500):
     if board.winner():
         print("[MCTS] Early exit: board already has a winner")
         return None
