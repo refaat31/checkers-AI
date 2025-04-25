@@ -1,7 +1,7 @@
 from copy import deepcopy
 import pygame
 from checkers.constants import RED, WHITE, SQUARE_SIZE, GREEN, WIDTH, HEIGHT
-import random
+from random import random
 
 def expectimax(position, depth, max_player, game):
     
@@ -10,14 +10,14 @@ def expectimax(position, depth, max_player, game):
     
     # Tuning bad ai behavior; choose any values, only relative sizes matter
     # higher random and bad values -> easy ai
-    good_choice_frequency = 5       # normal behavior
+    good_choice_frequency = 10       # normal behavior
     rand_choice_frequency = 1           # Choosing a random move as very good
     bad_choice_frequency = 1            # Flipping evaluations bad = good
     bad_behavior = 0
     
     bad_threshold = bad_choice_frequency/(good_choice_frequency+rand_choice_frequency+bad_choice_frequency)
     rand_threshold = 1 - (rand_choice_frequency/(good_choice_frequency+rand_choice_frequency+bad_choice_frequency))
-    roll = random.random()
+    roll = random()
     
     
     if roll > rand_threshold:   #high roll = random choice
